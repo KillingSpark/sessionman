@@ -34,12 +34,14 @@ pub enum Error {
 
 impl SessionManager {
     pub fn new() -> Result<SessionManager, cgroupv2::Error> {
+        let mut top_cgroup = cgroupv2::Cgroup::new_self()?;
+        top_cgroup.make_inner_node("sessionman_self")?;
         Ok(SessionManager {
             sessions: HashMap::new(),
             seats: HashMap::new(),
             session_to_seat: HashMap::new(),
             session_counter: 0,
-            cgroup: cgroupv2::Cgroup::new_self()?,
+            cgroup: top_cgroup,
         })
     }
 
@@ -76,7 +78,7 @@ impl SessionManager {
         let name = format!("Session-{}", self.session_counter.to_string());
         let mut cgroup = self
             .cgroup
-            .new_sub_group(&name)
+            .new_leaf(&name)
             .map_err(|e| Error::CantCreateCgroup(e))?;
         cgroup
             .move_into(pid)

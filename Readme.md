@@ -20,11 +20,11 @@ Track active vt with /sys/class/tty0/active. This file is inotify watchable. Thi
 
 Device <-> Seat matching is done by (e)udev (I think. It might just throw everything into seat0. But honestly this is for PCs not terminal servers anyways...)
 If devices dont show up in that matching they are considered global/shared devices
+Udev also provides the device file names in /dev for us in the DEVNAME key
 
 User <-> Session matching is done by sessionman (get from pam module?)
 Session <-> tty matching is done by sessionman (get from pam module?)
 tty <-> Seat matching is done by sessionman (how does that work? Can the pam module check which seat it is runing on somehow? Can we check to which seat a tty belomgs somehow?)
-
 
 ## Session registering tool
 Gets called by pam_exec or from a normal script when the session starts

@@ -29,6 +29,7 @@ pub enum Error {
     NoCgroupv2,
     CantCreate(std::io::Error),
     InvalidPidEntry(String),
+    IsLeaf,
 }
 
 fn find_own_cgroup() -> Result<String, Error> {
@@ -54,7 +55,20 @@ impl Cgroup {
         })
     }
 
-    pub fn new_sub_group(&mut self, new_group_name: &str) -> Result<Cgroup, Error> {
+    /// Make this cgroup an inner node by moving all processes into a new leaf
+    /// 
+    /// This is useful for the manager process for setting up the hierachy. You might 
+    /// want to freeze the cgroup first.
+    pub fn make_inner_node(&mut self, move_procs_to: &str) -> Result<Cgroup, Error> {
+        let pids = self.get_pids()?;
+        let mut new_leaf = self.new_subgroup(move_procs_to)?;
+        for pid in pids {
+            new_leaf.move_into(pid)?;
+        }
+        Ok(new_leaf)
+    }
+
+    fn new_subgroup(&mut self, new_group_name: &str) -> Result<Cgroup, Error> {
         let full_new_path = self.self_path.join(new_group_name);
         if !full_new_path.exists() {
             fs::create_dir_all(&full_new_path).map_err(|e| Error::CantCreate(e))?;
@@ -62,6 +76,15 @@ impl Cgroup {
         Ok(Cgroup {
             self_path: full_new_path,
         })
+    }
+
+    pub fn new_leaf(&mut self, new_group_name: &str) -> Result<Cgroup, Error> {
+        if !self.get_pids()?.is_empty() {
+            // Dont allow inner processes.
+            // Use make_inner_node first
+            return Err(Error::IsLeaf);
+        }
+        self.new_subgroup(new_group_name)
     }
 
     pub fn is_frozen(&self) -> Result<bool, Error> {
