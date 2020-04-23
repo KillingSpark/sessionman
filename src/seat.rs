@@ -1,14 +1,27 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+#[derive(Debug, Eq, PartialEq, Hash, Clone)]
+pub struct SeatId {
+    id: String,
+}
+
 #[derive(Debug)]
 pub struct Seat {
-    devices: HashMap<String, Device>,
+    pub id: SeatId,
+    pub devices: HashMap<String, Device>,
+}
+
+impl From<&str> for SeatId {
+    fn from(r: &str) -> SeatId {
+        SeatId { id: r.to_owned() }
+    }
 }
 
 #[derive(Debug)]
 pub struct Device {
-    pub dev_path: PathBuf,
+    pub dev_name: PathBuf,
+    pub seat_tag: Option<String>,
 }
 
 #[derive(Debug)]
@@ -23,18 +36,21 @@ impl Seat {
         devices.insert(
             "Monitor".into(),
             Device {
-                dev_path: PathBuf::from("/sys/device/some/device/path"),
+                dev_name: PathBuf::from("/dev/some/devfile"),
+                seat_tag: Some("seat0".into()),
             },
         );
-
-        Ok(Seat { devices })
+        Ok(Seat {
+            devices,
+            id: seat_tag.into(),
+        })
     }
-
     pub fn reload_devices(&mut self) -> Result<(), Error> {
         self.devices.insert(
             "Monitor".into(),
             Device {
-                dev_path: PathBuf::from("/sys/device/some/device/path"),
+                dev_name: PathBuf::from("/dev/some/devfile"),
+                seat_tag: Some("seat0".into()),
             },
         );
         Ok(())
