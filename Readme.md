@@ -73,4 +73,5 @@ Just some helpful links on the topic
 
 https://dvdhrm.wordpress.com/2013/08/24/how-vt-switching-works/
 https://dvdhrm.wordpress.com/2013/08/24/session-management-on-linux/
+https://dvdhrm.wordpress.com/2013/08/25/sane-session-switching/
 https://www.freedesktop.org/wiki/Software/systemd/multiseat/
