@@ -39,6 +39,17 @@ Gets called by pam_exec or from a normal script when the session starts. This is
     1. Write those env vars in a file for pam_env to read in. This poses a race condition but I cant think of a better way
         that does not involve writing my own pam module.
 
+## Udev tag meanings
+| tagname | explanation                                                                                     |
+|---------|-------------------------------------------------------------------------------------------------|
+| seat    | this device is added to a seat. Which seat must be looked up (ìn most cases its 'seat0' though) |
+| uaccess | this device will have ACLs applied to it, that allow the user of the seat RW access to it       |
+
+Devices with uaccess are somehow associated with a seat but not necessarily with an uacces tag. I suspect that some parent device node has the seat tag in this case.
+
+1. udev applies ACLs if the device is new if it has the uaccess tag and queries logind for the information which user currently occupies the seat.
+1. logind applies ACLs on all devices when a seat gets occupied by another session.
+
 
 ## Session deregistering tool
 Gets called by pam_exec or from a normal script when the session exits
